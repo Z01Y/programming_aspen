@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 const periods = [
   { name: 'default', displayName: '默认' },
@@ -8,7 +8,7 @@ const periods = [
   { name: 'Q4', displayName: '冬季' },
 ];
 
-const params = [
+const initialParams = [
   {
     id: '1001',
     name: 'A',
@@ -34,16 +34,9 @@ const TableCell = ({ value, editable, highlight, onChange, onDoubleClick }) => {
   const handleBlur = () => {
     setEditing(false);
     onChange(editedValue);
-    console.log(editedValue);
   };
 
   const cellStyle = highlight ? { backgroundColor: 'yellow' } : {};
-
-  useEffect(() => {
-    if (!editing) {
-      setEditedValue(value);
-    }
-  }, [value, editing]);
 
   return (
     <td
@@ -64,8 +57,25 @@ const TableCell = ({ value, editable, highlight, onChange, onDoubleClick }) => {
   );
 };
 
-const Table = ({ params }) => {
-  const [editingSeason, setEditingSeason] = useState(null);
+const Table = () => {
+  const [params, setParams] = useState(initialParams); // Manage params state
+
+  const updateParamData = (paramId, periodName, newValue) => {
+    const updatedParams = params.map((param) => {
+      if (param.id === paramId) {
+        const updatedParamData = {
+          ...param.periodData,
+          [periodName]: newValue,
+        };
+        return {
+          ...param,
+          periodData: updatedParamData,
+        };
+      }
+      return param;
+    });
+    setParams(updatedParams);
+  };
 
   return (
     <div>
@@ -86,7 +96,7 @@ const Table = ({ params }) => {
                 <TableCell
                   value={param.value}
                   editable={false}
-                  onDoubleClick={() => setEditingSeason(periods[0].name)}
+                  onDoubleClick={() => {}}
                 />
               </tr>
               {periods.slice(1).map((period) => (
@@ -97,9 +107,13 @@ const Table = ({ params }) => {
                     value={param.periodData[period.name] || param.value}
                     editable={period.name !== 'default'}
                     highlight={param.periodData[period.name] !== undefined}
-                    onDoubleClick={() => setEditingSeason(period.name)}
+                    onDoubleClick={() => {}}
                     onChange={(newValue) => {
-                      param.periodData[period.name] = parseFloat(newValue);
+                      updateParamData(
+                        param.id,
+                        period.name,
+                        parseFloat(newValue)
+                      );
                     }}
                   />
                 </tr>
@@ -115,7 +129,7 @@ const Table = ({ params }) => {
 function App() {
   return (
     <div className="App">
-      <Table params={params} />
+      <Table />
     </div>
   );
 }
